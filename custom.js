@@ -16,12 +16,12 @@ function onCreate(map) {
 // onCreateMarkerIcon : This function is called when marker icon is created.
 function onCreateMarkerIcon() {
     return L.icon({
-        iconUrl: 'tanuki_icon.png',
-        iconSize: [40, 40],
+        iconUrl: 'nursery_icon.png',
+        iconSize: [30, 30],
         iconAnchor: [0, 0],
-        popupAnchor: [20, 0],
+        popupAnchor: [15, 0],
         shadowUrl: '',
-        shadowSize: [38, 38],
+        shadowSize: [30, 30],
         shadowAnchor: [0, 0]
     });
 }
