@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta http-equiv="content-language" content="ja">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <title>練馬保育園マップ（サンプル）</title>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.1/dist/leaflet.css"
@@ -97,6 +98,21 @@ $.getJSON('./data/data.geojson', function(data) {
 var popup = L.popup();
 
 map.on('click', onMapClick);
+
+map.locate({setView: true, maxZoom: 16});
+
+map.on('locationfound', function(e) {
+    var radius = e.accuracy / 2;
+
+    L.marker(e.latlng).addTo(map)
+        .bindPopup("You are within " + radius + " meters from this point").openPopup();
+
+    L.circle(e.latlng, radius).addTo(map);
+});
+
+map.on('locationerror', function(e) {
+
+});
 
 </script>
 </body>
