@@ -9,6 +9,7 @@ function onInitialLatLng() {
 
 // onCreate : This function is called when page began.
 function onCreate(map) {
+    // area.geojason.
     $.getJSON('data/area.geojson', function(data) {
         L.geoJson(data, {
             style : function(feature) {
@@ -23,6 +24,7 @@ function onCreate(map) {
         }).addTo(map);
     });
 
+    // train data.
     var trainIcon = L.icon({
         iconUrl: 'data/public_transport/train/train_icon.png',
         iconSize: [30, 30],
@@ -66,6 +68,7 @@ function onCreate(map) {
         }).addTo(map);
     });
 
+    // bus data.
     var busIcon = L.icon({
         iconUrl: 'data/public_transport/bus/bus_icon.png',
         iconSize: [20, 20],
