@@ -8,8 +8,8 @@
     border-radius: 5px;
 }
 
-@media only screen and (max-width: 400px) {
+@media only screen and (max-width: 750px) {
     .info {
-        visibility: hidden;
+        display: none;
     }
 }
