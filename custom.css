@@ -8,7 +8,7 @@
     border-radius: 5px;
 }
 
-@media only screen and (max-width: 320px) {
+@media only screen and (max-device-width: 480px) {
     .info {
         display: none;
     }
