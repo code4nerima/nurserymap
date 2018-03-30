@@ -67,10 +67,6 @@ info.addTo(map);
 
 var markerIcon = onCreateMarkerIcon();
 
-$.getJSON(onRequireAreaBorder(), function(data) {
-    L.geoJson(data).addTo(map);
-});
-
 $.getJSON('./data/data.geojson', function(data) {
     L.geoJson(data, {
     	pointToLayer: function(geoJsonPoint, latlng) {
