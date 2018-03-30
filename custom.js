@@ -28,7 +28,7 @@ function onCreate(map) {
     var trainIcon = L.icon({
         iconUrl: 'data/public_transport/train/train_icon.png',
         iconSize: [30, 30],
-        popupAnchor: [10, 0],
+        popupAnchor: [0, -15],
     });
 
     $.getJSON('./data/public_transport/train/train_station.geojson', function(data) {
@@ -72,7 +72,7 @@ function onCreate(map) {
     var busIcon = L.icon({
         iconUrl: 'data/public_transport/bus/bus_icon.png',
         iconSize: [20, 20],
-        popupAnchor: [10, 0],
+        popupAnchor: [0, -10],
     });
 
     $.getJSON('./data/public_transport/bus/bus_stop.geojson', function(data) {
