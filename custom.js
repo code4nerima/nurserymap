@@ -25,12 +25,6 @@ function onCreate(map) {
     });
 
     // train data.
-    var trainIcon = L.icon({
-        iconUrl: 'data/public_transport/train/train_icon.png',
-        iconSize: [30, 30],
-        popupAnchor: [0, -15],
-    });
-
     $.getJSON('./data/public_transport/train/train_station.geojson', function(data) {
         L.geoJson(data, {
             pointToLayer: function(geoJsonPoint, latlng) {
@@ -41,6 +35,27 @@ function onCreate(map) {
                     (feature.geometry.coordinates[0][0][1] + feature.geometry.coordinates[0][1][1])/2,
                     (feature.geometry.coordinates[0][0][0] + feature.geometry.coordinates[0][1][0])/2
                 ] ;
+
+                var iconFilePath = "" ;
+
+                if (feature.properties.運営会社 == "西武鉄道" && 
+                (feature.properties.路線名 == "池袋線" || feature.properties.路線名 == "豊島線" || feature.properties.路線名 == "西武有楽町線")) {
+                    iconFilePath = 'data/public_transport/train/train_icon_seibuikebukuro.png' ;
+                } else if (feature.properties.運営会社 == "西武鉄道" && feature.properties.路線名 == "新宿線") {
+                    iconFilePath = 'data/public_transport/train/train_icon_seibushinjuku.png' ;
+                } else if (feature.properties.運営会社 == "東京地下鉄" && feature.properties.路線名 == "8号線有楽町線") {
+                    iconFilePath = 'data/public_transport/train/train_icon_yurakucho.png' ;
+                } else if (feature.properties.運営会社 == "東京都" && feature.properties.路線名 == "12号線大江戸線") {
+                    iconFilePath = 'data/public_transport/train/train_icon_ooedo.png' ;
+                } else {
+                    iconFilePath = 'data/public_transport/train/train_icon.png' ;
+                }
+
+                var trainIcon = L.icon({
+                    iconUrl: iconFilePath,
+                    iconSize: [30, 30],
+                    popupAnchor: [0, -15],
+                });
 
                 var marker = L.marker(latlng, {icon : trainIcon}) ;
 
