@@ -23,8 +23,7 @@ info.onAdd = function (map) {
 };
 
 // method that we will use to update the control based on feature properties passed
-info.update = function (feature) {
-	var popupContents = onUpdateInfo(feature) ;
+info.update = function (popupContents) {
 	this._div.innerHTML = popupContents ;
 };
 
@@ -45,7 +44,7 @@ $.getJSON('./data/data.geojson', function(data) {
 			layer.on({
         		mouseover: function(e){
 					if (onMarkerMouseOver(e) == true) {
-						info.update(feature);
+						info.update(popupContents);
 					}
 				},
         		mouseout: function(e){
@@ -63,6 +62,7 @@ var popup = L.popup();
 
 map.on('click', onMapClick);
 
+/*
 map.locate({setView: true, maxZoom: 16});
 
 map.on('locationfound', function(e) {
@@ -77,3 +77,4 @@ map.on('locationfound', function(e) {
 map.on('locationerror', function(e) {
 
 });
+*/
