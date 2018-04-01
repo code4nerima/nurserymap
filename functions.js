@@ -2,7 +2,97 @@
 //
 //
 
-function createContent(feature) {
+var layers ;
+// onCreate : This function is called when page began.
+function onCreate() {
+    // area.geojason.
+    $.getJSON('data/area01.geojson', function(data) {
+        createAreaLayer(data).addTo(map);
+    });
+
+    $.getJSON('data/area02.geojson', function(data) {
+        createAreaLayer(data).addTo(map);
+    });
+
+    layers = new Array();
+
+    // train data.
+    $.getJSON('./data/public_transport/train/train_station.geojson', function(data) {
+        layers.push(createTrainStationLayer(data)) ;
+    });
+
+    $.getJSON('./data/public_transport/train/train_line.geojson', function(data) {
+        layers.push(createTrainLineLayer(data));
+    });
+
+    // bus data.
+    $.getJSON('./data/public_transport/bus/bus_stop01.geojson', function(data) {
+        layers.push(createBusStopLayer(data)) ;
+    });
+    
+    $.getJSON('./data/public_transport/bus/bus_stop02.geojson', function(data) {
+        layers.push(createBusStopLayer(data)) ;
+    });
+
+    $.getJSON('./data/public_transport/bus/bus_root01.geojson', function(data) {
+        layers.push(createBusRootLayer(data)) ;
+    });
+    
+    $.getJSON('./data/public_transport/bus/bus_root02.geojson', function(data) {
+        layers.push(createBusRootLayer(data)) ;
+    });
+
+	// Load datas
+	var markerIcon = L.icon({
+        iconUrl: 'nursery_icon.png',
+        iconSize: [30, 30],
+        popupAnchor: [0, -15]
+    });
+	
+	$.getJSON('./data/data.geojson', function(data) {
+		L.geoJson(data, {
+			pointToLayer: function(geoJsonPoint, latlng) {
+				return L.marker(latlng, {icon: markerIcon});
+			},
+			onEachFeature: function(feature, layer) {
+				var popupContents = createNurseryContent(feature) ;
+
+				layer.bindPopup(popupContents);
+	 
+				layer.on({
+					mouseover: function(e){
+						info.update(popupContents);
+					},
+					mouseout: function(e){
+						
+					},
+					click: function(e){
+						
+					}
+				});
+			}
+		}).addTo(map);
+	});
+
+    map.on('zoomend', function(e) {
+        if (e.target._zoom > 14) {
+            for (var i=0; i<layers.length; i++) {
+                layers[i].addTo(map) ;
+            }
+        } else {
+            for (var i=0; i<layers.length; i++) {
+                layers[i].remove(map) ;
+            }
+        }
+    }) ;
+}
+
+// onMapClick : This function is called when map was clicked.
+function onMapClick(e) {
+    //popup.setLatLng(e.latlng).setContent("You clicked the map at " + e.latlng.toString()).openOn(map);
+}
+
+function createNurseryContent(feature) {
     var popupContents = '<h4>練馬保育園マップ</h4>';
  
     if (feature && feature.properties) {   
@@ -81,15 +171,13 @@ function createBusStopLayer(data) {
 
             layer.on({
         		mouseover: function(e){
-					if (onMarkerMouseOver(e) == true) {
-						info.update(popupContents);
-					}
+					info.update(popupContents);
 				},
         		mouseout: function(e){
-					onMarkerMouseOut(e) ;
+					
 				},
         		click: function(e){
-					onMarkerClick(e);
+					
 				}
     		});
         }
@@ -162,19 +250,18 @@ function createTrainStationLayer(data) {
             popupContents += "<table>" ;
             popupContents += "<tr><td>" + feature.properties.N02_004 + "</td><td>" + feature.properties.N02_003 + "</td><tr>" ;
             popupContents += "</table>" ;
+
             marker.bindPopup(popupContents);
 
             marker.on({
         		mouseover: function(e){
-					if (onMarkerMouseOver(e) == true) {
-						info.update(popupContents);
-					}
+					info.update(popupContents);
 				},
         		mouseout: function(e){
-					onMarkerMouseOut(e) ;
+					
 				},
         		click: function(e){
-					onMarkerClick(e);
+					
 				}
             });
             
