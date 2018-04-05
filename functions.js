@@ -182,6 +182,12 @@ function createBusStopLayer(data, filterFunc) {
         popupAnchor: [0, -10],
     }) ;
 
+    var currentBusIcon = L.icon({
+        iconUrl: 'data/public_transport/bus/filtered_bus_icon.png',
+        iconSize: [40, 40],
+        popupAnchor: [0, -20],
+    }) ;
+
     return L.geoJson(data, {
         filter: function(feature) {
             if (filterFunc != null) {
@@ -190,9 +196,13 @@ function createBusStopLayer(data, filterFunc) {
                 return true ;
             }
         },
-        pointToLayer: function(geoJsonPoint, latlng) {
+        pointToLayer: function(feature, latlng) {
             if (filterFunc != null) {
-                return L.marker(latlng, {icon : filteredBusIcon}) ;
+                if (currentBusStopFeature.properties.P11_001 == feature.properties.P11_001) {
+                    return L.marker(latlng, {icon : currentBusIcon}) ;
+                } else {
+                    return L.marker(latlng, {icon : filteredBusIcon}) ;
+                }
             } else {
                 return L.marker(latlng, {icon : busIcon}) ;
             }
