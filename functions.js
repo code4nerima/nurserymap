@@ -3,8 +3,19 @@
 //
 
 var layers ;
+
+var currentBusStopLayers ;
+var basicBusStopLayers ;
+var filteredBusStopLayers ;
+
 // onCreate : This function is called when page began.
 function onCreate() {
+    var helloPopup = L.popup().setContent('Hello World!');
+
+    L.easyButton('fa-globe', function(btn, map){
+        helloPopup.setLatLng(map.getCenter()).openOn(map);
+    }).addTo(map);
+
     // area.geojason.
     $.getJSON('data/area01.geojson', function(data) {
         createAreaLayer(data).addTo(map);
@@ -15,6 +26,8 @@ function onCreate() {
     });
 
     layers = new Array();
+    basicBusStopLayers = new Array();
+    filteredBusStopLayers = new Array();
 
     // train data.
     $.getJSON('./data/public_transport/train/train_station.geojson', function(data) {
@@ -27,19 +40,19 @@ function onCreate() {
 
     // bus data.
     $.getJSON('./data/public_transport/bus/bus_stop01.geojson', function(data) {
-        layers.push(createBusStopLayer(data)) ;
+        basicBusStopLayers.push(createBusStopLayer(data, null) ) ;
     });
     
     $.getJSON('./data/public_transport/bus/bus_stop02.geojson', function(data) {
-        layers.push(createBusStopLayer(data)) ;
+        basicBusStopLayers.push(createBusStopLayer(data, null)) ;
     });
 
-    $.getJSON('./data/public_transport/bus/bus_root01.geojson', function(data) {
-        layers.push(createBusRootLayer(data)) ;
+    $.getJSON('./data/public_transport/bus/bus_root01.geojson', function(data) {    
+        basicBusStopLayers.push(createBusRootLayer(data, null)) ;
     });
     
     $.getJSON('./data/public_transport/bus/bus_root02.geojson', function(data) {
-        layers.push(createBusRootLayer(data)) ;
+        basicBusStopLayers.push(createBusRootLayer(data, null)) ;
     });
 
 	// Load datas
@@ -49,7 +62,8 @@ function onCreate() {
         popupAnchor: [0, -15]
     });
 	
-	$.getJSON('./data/data.geojson', function(data) {
+	$.getJSON('./data/data.geojson', function(data) {  
+              
 		L.geoJson(data, {
 			pointToLayer: function(geoJsonPoint, latlng) {
 				return L.marker(latlng, {icon: markerIcon});
@@ -74,14 +88,28 @@ function onCreate() {
 		}).addTo(map);
 	});
 
+    currentBusStopLayers = basicBusStopLayers ;
+
     map.on('zoomend', function(e) {
         if (e.target._zoom > 14) {
             for (var i=0; i<layers.length; i++) {
                 layers[i].addTo(map) ;
             }
+            
+            if (currentBusStopLayers == basicBusStopLayers) {
+                for (var i=0; i<currentBusStopLayers.length; i++) {
+                    currentBusStopLayers[i].addTo(map) ;
+                }
+            }
+            
         } else {
             for (var i=0; i<layers.length; i++) {
                 layers[i].remove(map) ;
+            }
+            if (currentBusStopLayers == basicBusStopLayers) {
+                for (var i=0; i<currentBusStopLayers.length; i++) {
+                    currentBusStopLayers[i].remove(map) ;
+                }
             }
         }
     }) ;
@@ -139,16 +167,35 @@ function createAreaLayer(data) {
         }
     }) ;
 }
-function createBusStopLayer(data) {
+var currentBusStopFeature ;
+
+function createBusStopLayer(data, filterFunc) {
     var busIcon = L.icon({
         iconUrl: 'data/public_transport/bus/bus_icon.png',
         iconSize: [20, 20],
         popupAnchor: [0, -10],
     });
 
+    var filteredBusIcon = L.icon({
+        iconUrl: 'data/public_transport/bus/filtered_bus_icon.png',
+        iconSize: [20, 20],
+        popupAnchor: [0, -10],
+    }) ;
+
     return L.geoJson(data, {
+        filter: function(feature) {
+            if (filterFunc != null) {
+                return filterFunc(feature)
+            } else {
+                return true ;
+            }
+        },
         pointToLayer: function(geoJsonPoint, latlng) {
-            return L.marker(latlng, {icon : busIcon}) ;
+            if (filterFunc != null) {
+                return L.marker(latlng, {icon : filteredBusIcon}) ;
+            } else {
+                return L.marker(latlng, {icon : busIcon}) ;
+            }
         },
         onEachFeature: function(feature, layer) {
             var iconFilePath = 'data/public_transport/bus/bus_icon.png' ;
@@ -165,27 +212,38 @@ function createBusStopLayer(data) {
                 popupContents += "<tr><td>" + companies[i] + "</td><td>" + identifies[i] + "</td><tr>" ;
             }
 
-            popupContents += "</table>" ;
+            popupContents += "</table><br />" ;
+
+            popupContents += "<button id=\"search_root\" onclick=\"onSearchRoot()\">検索</button>" ;
+            popupContents += "<button id=\"search_reset\" onclick=\"onSearchReset()\">リセット</button>" ;
 
             layer.bindPopup(popupContents);
 
             layer.on({
         		mouseover: function(e){
+                    currentBusStopFeature = feature ;
 					info.update(popupContents);
 				},
         		mouseout: function(e){
 					
 				},
         		click: function(e){
-					
+					currentBusStopFeature = feature ;
 				}
     		});
         }
     })
 }
 
-function createBusRootLayer(data) {
+function createBusRootLayer(data, filterFunc) {
     return L.geoJson(data, {
+        filter: function(feature) {
+            if (filterFunc != null) {
+                return filterFunc(feature)
+            } else {
+                return true ;
+            }
+        },
         style: function(feature) {
             return {
                 weight: 2,
@@ -286,4 +344,105 @@ function createTrainLineLayer(data) {
             };
         }
     }) ;
+}
+
+function onSearchRoot(e) {
+
+    for (var i=0; i<currentBusStopLayers.length; i++) {
+        currentBusStopLayers[i].remove(map) ;
+    }
+
+    filteredBusStopLayers = new Array();
+
+    currentBusStopLayers = filteredBusStopLayers ;
+
+    var onBusStopFilter = function(feature) {
+        
+        var currentCompanies = currentBusStopFeature.properties.P11_003_1.split(",");
+        var currentIdentifies = currentBusStopFeature.properties.P11_004_1.split(",");
+        var array = Array()
+
+        for (var i=0; i<currentCompanies.length; i++) {
+            var key = currentCompanies[i] + currentIdentifies[i] ;
+            array.push(key) ;
+        }
+
+        var companies = feature.properties.P11_003_1.split(",");
+        var identifies = feature.properties.P11_004_1.split(",");
+
+        for (var i=0; i<companies.length; i++) {
+            var key = companies[i] + identifies[i] ;
+
+            if (array.find(function(element) {
+                return (element == key);
+            }) != null) {
+                return true ;
+            }
+        }
+
+        return false ;
+    } ;
+
+    var onBusRootFilter = function(feature) {
+        var currentCompanies = currentBusStopFeature.properties.P11_003_1.split(",");
+        var currentIdentifies = currentBusStopFeature.properties.P11_004_1.split(",");
+        var array = Array()
+
+        for (var i=0; i<currentCompanies.length; i++) {
+            var key = currentCompanies[i] + currentIdentifies[i] ;
+            array.push(key) ;
+        }
+
+        var key = feature.properties.N07_002 + feature.properties.N07_003 ;
+
+        if (array.find(function(element) {
+            return (element == key);
+        }) != null) {
+            return true ;
+        } else {
+            return false ;
+        }
+    } ;
+
+    $.getJSON('./data/public_transport/bus/bus_stop01.geojson', function(data) {
+        var layer = createBusStopLayer(data, onBusStopFilter);
+
+        filteredBusStopLayers.push(layer) ;
+        layer.addTo(map) ;
+    });
+    
+    $.getJSON('./data/public_transport/bus/bus_stop02.geojson', function(data) {
+        var layer = createBusStopLayer(data, onBusStopFilter) ;
+
+        filteredBusStopLayers.push(layer) ;
+        layer.addTo(map) ;
+    });
+
+    $.getJSON('./data/public_transport/bus/bus_root01.geojson', function(data) {    
+        var layer = createBusRootLayer(data, onBusRootFilter) ;
+
+        filteredBusStopLayers.push(layer) ;
+        layer.addTo(map) ;
+    });
+    
+    $.getJSON('./data/public_transport/bus/bus_root02.geojson', function(data) {
+        var layer = createBusRootLayer(data, onBusRootFilter) ;
+
+        filteredBusStopLayers.push(layer) ;
+        layer.addTo(map) ;
+    });
+}
+
+function onSearchReset() {
+    for (var i=0; i<filteredBusStopLayers.length; i++) {
+        filteredBusStopLayers[i].remove(map) ;
+    }
+
+    currentBusStopLayers = basicBusStopLayers ;
+
+    if (map._zoom > 14) {
+        for (var i=0; i<currentBusStopLayers.length; i++) {
+            currentBusStopLayers[i].addTo(map) ;
+        }
+    }
 }
