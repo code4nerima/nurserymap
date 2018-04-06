@@ -27,10 +27,15 @@ function main() {
 	};
 	
 	info.update = function (popupContents) {
-		this._div.innerHTML = popupContents ;
+		if (popupContents != null) {
+			this._div.innerHTML = popupContents ;
+			$(".info").css("display", "inline") ;
+		}
 	};
-	
+
 	info.addTo(map);
+
+	$(".info").css("display", "none") ;
 	
 	map.on('click', onMapClick);
 	

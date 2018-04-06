@@ -10,12 +10,7 @@ var filteredBusStopLayers ;
 
 // onCreate : This function is called when page began.
 function onCreate() {
-    var helloPopup = L.popup().setContent('Hello World!');
-
-    L.easyButton('fa-globe', function(btn, map){
-        helloPopup.setLatLng(map.getCenter()).openOn(map);
-    }).addTo(map);
-
+    
     // area.geojason.
     $.getJSON('data/area01.geojson', function(data) {
         createAreaLayer(data).addTo(map);
